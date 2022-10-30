@@ -21,7 +21,7 @@ import { ChemicalController } from './chemicals/chemicals.controller';
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: '',
+      password: 'X.bling99',
       database: 'phamasecure',
       entities: [User, Role, Chemical, ChemicalItem],
       synchronize: true,
