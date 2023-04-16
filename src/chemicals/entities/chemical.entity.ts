@@ -24,7 +24,7 @@ export class Chemical extends BaseEntity {
 
   @Column()
   @IsString()
-  timeline: number;
+  timeline: string;
 
   @OneToMany((type) => ChemicalItem, (item) => item.chemical)
   items: ChemicalItem[];

@@ -11,17 +11,18 @@ import { ChemicalsModule } from './chemicals/chemicals.module';
 import { Chemical } from './chemicals/entities/chemical.entity';
 import { ChemicalItem } from './chemicals/entities/item.entity';
 import { ChemicalController } from './chemicals/chemicals.controller';
-
+import { HpEncryptionModule } from './hpEncrption/hpencryption.module';
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    HpEncryptionModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: 'X.bling99',
+      password: '',
       database: 'phamasecure',
       entities: [User, Role, Chemical, ChemicalItem],
       synchronize: true,
@@ -29,6 +30,7 @@ import { ChemicalController } from './chemicals/chemicals.controller';
     ChemicalsModule,
   ],
   controllers: [AppController, AuthController, ChemicalController],
-  providers: [AppService],
+  providers: [
+AppService],
 })
 export class AppModule {}

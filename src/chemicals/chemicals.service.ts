@@ -6,6 +6,8 @@ import { ChemicalDto } from './dto/chemical.dto';
 import { ChemicalItemDto } from './dto/chemical_item.dto';
 import { Chemical } from './entities/chemical.entity';
 import { ChemicalItem } from './entities/item.entity';
+import { HpencryptionService } from 'src/hpEncrption/hpencryption.service';
+import { decrypt } from 'src/utils/nodeSeal';
 @Injectable()
 export class ChemicalsService {
   constructor(
@@ -13,57 +15,40 @@ export class ChemicalsService {
     private chemicalRepository: Repository<Chemical>,
     @InjectRepository(ChemicalItem)
     private chemicalitemRepository: Repository<ChemicalItem>,
+    private hpEcryptionService: HpencryptionService,
   ) {}
 
   async showAll() {
-    return await this.chemicalRepository.find();
+    var data = await this.chemicalRepository.find({
+      relations: ['items'],
+    });
+    var newData = [];
+    data.forEach((item) => {
+      newData.push(this.hpEcryptionService.decryptChemical(item));
+    });
+    return newData;
+
+    // return await this.hpEcryptionService.decryptChemical(data);
   }
 
   async create(data: ChemicalDto) {
-    const savedChemical = await this.chemicalRepository.save(data);
-    data.items.forEach(async (item) => {
-      item.chemicalId = savedChemical.id;
-      console.log(item);
-      const newItem = new ChemicalItem();
-      newItem.name = item.name;
-      newItem.chemical = savedChemical;
-      newItem.description = item.description;
-      newItem.qty = item.qty;
-
-      await this.chemicalitemRepository.save(newItem);
-    });
+    const savedChemical = await this.hpEcryptionService.encryptCreateChemical(
+      data,
+    );
     return savedChemical;
   }
 
   async read(id: number) {
-    return await this.chemicalRepository.findOne({
+    var data = await this.chemicalRepository.findOne({
       where: { id: id },
       relations: ['items'],
     });
+    return this.hpEcryptionService.decryptChemical(data);
   }
 
   //create update method
   async update(id: number, data: Partial<ChemicalDto>) {
-    await this.chemicalRepository.update({ id }, data);
-    // data.items.forEach(async (item) => {
-    //   console.log(item);
-    //   await this.chemicalitemRepository.update({ id }, item);
-    // });
-    return await this.chemicalRepository.findOne({
-      where: { id: id },
-      relations: ['items'],
-    });
-  }
-  async updateItem(id: number, data: Partial<ChemicalItemDto>) {
-    await this.chemicalitemRepository.update({ id }, data);
-    // data.items.forEach(async (item) => {
-    //   console.log(item);
-    //   await this.chemicalitemRepository.update({ id }, item);
-    // });
-    return await this.chemicalitemRepository.findOne({
-      where: { id: id },
-      relations: ['chemical'],
-    });
+    return await this.hpEcryptionService.updateEncrptedChemical(data, id);
   }
 
   //create method to add item to chemical
@@ -87,5 +72,25 @@ export class ChemicalsService {
   async destroy(id: number) {
     await this.chemicalRepository.delete({ id });
     return { deleted: true };
+  }
+
+  //create function ton search by name and description
+  async search(queryString: string) {
+    var data = await this.chemicalRepository.find({
+      relations: ['items'],
+    });
+
+    return data
+      .filter((item) => {
+        var name = decrypt(item.name);
+        var description = decrypt(item.description);
+        return (
+          name.toLowerCase().includes(queryString.toLowerCase()) ||
+          description.toLowerCase().includes(queryString.toLowerCase())
+        );
+      })
+      .map((item) => {
+        return this.hpEcryptionService.decryptChemical(item);
+      });
   }
 }

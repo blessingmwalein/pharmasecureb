@@ -51,7 +51,7 @@ export class ChemicalController {
   }
 
   @Patch(':id')
-  async uppdateChemical(
+  async updateChemical(
     @Param('id') id: number,
     @Body() data: Partial<ChemicalDto>,
   ) {
@@ -62,6 +62,7 @@ export class ChemicalController {
       updatedChemical,
     };
   }
+
   @Post(':id')
   async addItem(
     @Param('id') id: number,
@@ -74,18 +75,18 @@ export class ChemicalController {
       updatedChemical,
     };
   }
-  @Patch('item/:id')
-  async updateItem(
-    @Param('id') id: number,
-    @Body() data: Partial<ChemicalItemDto>,
-  ) {
-    const updatedChemicalItem = await this.chemicalService.updateItem(id, data);
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Chemical Item updated successfully',
-      updatedChemicalItem,
-    };
-  }
+  // @Patch('item/:id')
+  // async updateItem(
+  //   @Param('id') id: number,
+  //   @Body() data: Partial<ChemicalItemDto>,
+  // ) {
+  //   const updatedChemicalItem = await this.chemicalService.updateItem(id, data);
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     message: 'Chemical Item updated successfully',
+  //     updatedChemicalItem,
+  //   };
+  // }
 
   @Delete(':id')
   async deleteChemical(@Param('id') id: number) {
@@ -93,6 +94,16 @@ export class ChemicalController {
     return {
       statusCode: HttpStatus.OK,
       message: 'Chemical deleted successfully',
+    };
+  }
+
+  @Post('search/mix')
+  async searchChemical(@Body() data: any) {
+    const chemicals = await this.chemicalService.search(data.query);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Search Results',
+      chemicals,
     };
   }
 }

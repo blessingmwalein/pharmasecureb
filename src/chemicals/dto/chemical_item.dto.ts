@@ -4,6 +4,6 @@ export class ChemicalItemDto {
   id: number;
   name: string;
   description: string;
-  qty: number;
+  qty: string;
   chemicalId: number;
 }

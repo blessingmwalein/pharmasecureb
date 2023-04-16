@@ -4,6 +4,6 @@ export class ChemicalDto {
   id: number;
   name: string;
   description: string;
-  timeline: number;
+  timeline: string;
   items: ChemicalItemDto[];
 }

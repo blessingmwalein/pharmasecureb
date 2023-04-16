@@ -25,7 +25,7 @@ import { Chemical } from './chemical.entity';
 
     @Column()
     @IsString()
-    qty:number;
+    qty:string;
   
     @ManyToOne(type => Chemical, chemical => chemical.items) 
     @JoinColumn({name: 'chemicalId'})
