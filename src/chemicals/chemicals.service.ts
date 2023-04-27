@@ -8,6 +8,7 @@ import { Chemical } from './entities/chemical.entity';
 import { ChemicalItem } from './entities/item.entity';
 import { HpencryptionService } from 'src/hpEncrption/hpencryption.service';
 import { decrypt } from 'src/utils/nodeSeal';
+import { Report } from './entities/report.entity';
 @Injectable()
 export class ChemicalsService {
   constructor(
@@ -15,6 +16,9 @@ export class ChemicalsService {
     private chemicalRepository: Repository<Chemical>,
     @InjectRepository(ChemicalItem)
     private chemicalitemRepository: Repository<ChemicalItem>,
+
+    @InjectRepository(Report)
+    private reportRepository: Repository<Report>,
     private hpEcryptionService: HpencryptionService,
   ) {}
 
@@ -30,11 +34,20 @@ export class ChemicalsService {
 
     // return await this.hpEcryptionService.decryptChemical(data);
   }
+  async showReport() {
+    return await this.reportRepository.find(
+      { relations: ['chemical'] },
+    );
+  }
 
-  async create(data: ChemicalDto) {
+
+
+  async create(data: ChemicalDto, user: string) {
     const savedChemical = await this.hpEcryptionService.encryptCreateChemical(
       data,
     );
+
+    this.createReport(savedChemical, 'create', user);
     return savedChemical;
   }
 
@@ -46,9 +59,32 @@ export class ChemicalsService {
     return this.hpEcryptionService.decryptChemical(data);
   }
 
+  //create function to create report
+  async createReport(chemical: Chemical, type: string, user: string) {
+    //get loged on user
+
+    const newReport = new Report();
+    newReport.user = user;
+    newReport.chemical = chemical;
+    newReport.date = new Date().toString();
+    newReport.reportType = type;
+    return await this.reportRepository.save(newReport);
+  }
+
   //create update method
-  async update(id: number, data: Partial<ChemicalDto>) {
-    return await this.hpEcryptionService.updateEncrptedChemical(data, id);
+  async update(id: number, data: Partial<ChemicalDto>, user: string) {
+    var updatedChemical = await this.hpEcryptionService.updateEncrptedChemical(
+      data,
+      id,
+    );
+
+    var chemical = await this.chemicalRepository.findOne({
+      where: { id: id },
+      relations: ['items'],
+    });
+    this.createReport(chemical, 'update', user);
+
+    return updatedChemical;
   }
 
   //create method to add item to chemical
@@ -92,5 +128,9 @@ export class ChemicalsService {
       .map((item) => {
         return this.hpEcryptionService.decryptChemical(item);
       });
+  }
+
+  //create function to backup database
+  async backup() {
   }
 }

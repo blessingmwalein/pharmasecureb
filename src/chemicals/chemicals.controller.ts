@@ -8,9 +8,10 @@ import {
   Param,
   HttpStatus,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-
+import mysqldump from 'mysqldump';
 import { ChemicalsService } from './chemicals.service';
 import { ChemicalDto } from './dto/chemical.dto';
 import { ChemicalItemDto } from './dto/chemical_item.dto';
@@ -29,10 +30,24 @@ export class ChemicalController {
       chemicals,
     };
   }
+  @Get('reports')
+  async showAllReports() {
+    const reports = await this.chemicalService.showReport();
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Reports fetched successfully',
+      reports,
+    };
+  }
 
   @Post('create')
-  async createChemical(@Body() data: ChemicalDto) {
-    const checmical = await this.chemicalService.create(data);
+  async createChemical(@Body() data: ChemicalDto, @Request() req) {
+    //get loged on user
+
+    const checmical = await this.chemicalService.create(
+      data,
+      req.user.username,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Chemical created successfully',
@@ -54,8 +69,13 @@ export class ChemicalController {
   async updateChemical(
     @Param('id') id: number,
     @Body() data: Partial<ChemicalDto>,
+    @Request() req,
   ) {
-    const updatedChemical = await this.chemicalService.update(id, data);
+    const updatedChemical = await this.chemicalService.update(
+      id,
+      data,
+      req.user.username,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: 'Chemical updated successfully',
@@ -104,6 +124,29 @@ export class ChemicalController {
       statusCode: HttpStatus.OK,
       message: 'Search Results',
       chemicals,
+    };
+  }
+
+  @Post('backup/database')
+  async backupDataBase(@Body() data: any) {
+
+    //create date timestap
+    const date = new Date();
+    const timestamp = date.getTime();
+
+    mysqldump({
+      connection: {
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'phamasecure',
+      },
+      dumpToFile: './backups/dump'+timestamp+'.sql',
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Database Backup',
     };
   }
 }

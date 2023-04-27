@@ -106,6 +106,7 @@ export class HpencryptionService {
       newDecrptedItems.push(this.decryptChemicalItem(item));
     });
     return {
+      id: data.id,
       name: decrypt(data.name),
       description: decrypt(data.description),
       timeline: decrypt(data.timeline),

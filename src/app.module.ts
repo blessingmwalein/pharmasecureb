@@ -12,6 +12,7 @@ import { Chemical } from './chemicals/entities/chemical.entity';
 import { ChemicalItem } from './chemicals/entities/item.entity';
 import { ChemicalController } from './chemicals/chemicals.controller';
 import { HpEncryptionModule } from './hpEncrption/hpencryption.module';
+import { Report } from './chemicals/entities/report.entity';
 @Module({
   imports: [
     AuthModule,
@@ -24,7 +25,7 @@ import { HpEncryptionModule } from './hpEncrption/hpencryption.module';
       username: 'root',
       password: '',
       database: 'phamasecure',
-      entities: [User, Role, Chemical, ChemicalItem],
+      entities: [User, Role, Chemical, ChemicalItem, Report],
       synchronize: true,
     }),
     ChemicalsModule,
